@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6-Letter Binary Matrix & Redstone Lamp Grid</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fira+Code:wght@400;600;700&display=swap');
+
+    .font-pixel { font-family: 'Press Start 2P', monospace; }
+    .font-code { font-family: 'Fira Code', monospace; }
+
+    /* Seamless Pixel Lamp Grid */
+    .pixel-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0px;
+      line-height: 0;
+    }
+    .pixel-grid img {
+      width: 100%;
+      height: auto;
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* Glow effect for matrix text */
+    .glow-text {
+      text-shadow: 0 0 10px rgba(251, 191, 36, 0.6), 0 0 20px rgba(245, 158, 11, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-code flex flex-col justify-between selection:bg-amber-500 selection:text-black">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded bg-amber-500 flex items-center justify-center font-pixel text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20">
+          6B
+        </div>
+        <h1 class="text-lg sm:text-xl font-bold tracking-tight text-amber-400">Binary Word & Redstone Lamp Matrix</h1>
+      </div>
+      <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">5×6 Column Binary</span>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8 w-full space-y-8 flex-grow">
+    
+    <!-- Input Section -->
+    <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6 shadow-xl">
+      <label for="wordInput" class="block text-sm font-semibold text-slate-300 mb-2">
+        Enter a 6-Letter Word:
+      </label>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+          <input 
+            type="text" 
+            id="wordInput" 
+            maxlength="6"
+            value="ANIMAL"
+            placeholder="e.g. ANIMAL" 
+            class="w-full bg-slate-950 border-2 border-slate-700 focus:border-amber-500 rounded-lg px-4 py-3 text-xl font-bold tracking-widest text-amber-300 uppercase outline-none transition-all placeholder:text-slate-600"
+          />
+          <span id="charCount" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400 bg-slate-900 px-2 py-1 rounded border border-slate-700">
+            6/6
+          </span>
+        </div>
+        <button 
+          id="btnPreset" 
+          class="px-5 py-3 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md shadow-amber-500/10 text-sm sm:text-base">
+          ⚡ Preset: ANIMAL
+        </button>
+      </div>
+      <p id="errorMsg" class="text-red-400 text-xs mt-2 hidden">⚠️ Please enter exactly 6 letters (A–Z only).</p>
+    </section>
+
+    <!-- Visual Output 1: Joined Redstone Lamp Grid -->
+    <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h2 class="text-base sm:text-lg font-bold text-amber-400 flex items-center gap-2">
+          <span>💡</span> Joined Redstone Lamp Grid (5×6 Image)
+        </h2>
+        <span class="text-xs text-slate-400 font-mono">0 = 0lamp.png | 1 = 1lamp.png</span>
+      </div>
+
+      <!-- Combined Seamless Pixel Grid -->
+      <div class="flex justify-center py-2">
+        <div class="w-full max-w-sm sm:max-w-md bg-slate-950 p-3 rounded-lg border border-slate-800 shadow-2xl">
+          <div id="lampGrid" class="pixel-grid border border-amber-900/40 rounded overflow-hidden shadow-inner">
+            <!-- 5x6 Lamp Image tiles rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visual Output 2: Formatted Text Matrix (Exact Format) -->
+    <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h2 class="text-base sm:text-lg font-bold text-amber-400 flex items-center gap-2">
+          <span>📄</span> Text Matrix Output
+        </h2>
+        <button id="btnCopyText" class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition">
+          📋 Copy Text
+        </button>
+      </div>
+
+      <div class="bg-slate-950 p-4 sm:p-6 rounded-lg border border-slate-800 overflow-x-auto">
+        <pre id="matrixText" class="font-code text-amber-300 text-sm sm:text-base font-bold leading-relaxed tracking-wider glow-text"></pre>
+      </div>
+    </section>
+
+    <!-- Breakdown Table -->
+    <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6 shadow-xl space-y-4">
+      <h2 class="text-base sm:text-lg font-bold text-amber-400 border-b border-slate-800 pb-3">
+        🔍 Letter-by-Letter 5-Bit Breakdown
+      </h2>
+      <div id="breakdownContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer with Minecraft World Download Button -->
+  <footer class="border-t border-slate-800 bg-slate-900/80 py-8 px-4 mt-8">
+    <div class="max-w-4xl mx-auto flex flex-col items-center justify-center space-y-4 text-center">
+      
+      <div class="w-full max-w-md bg-gradient-to-r from-amber-500/10 via-amber-500/20 to-amber-500/10 border border-amber-500/30 rounded-xl p-5 shadow-lg">
+        <p class="text-xs font-semibold text-amber-300 uppercase tracking-widest mb-1">Minecraft World Map</p>
+        <h3 class="text-base font-bold text-white mb-3">Hangman Updated Game</h3>
+        
+        <a 
+          href="hangman updated game.mcworld" 
+          download="hangman updated game.mcworld"
+          class="inline-flex items-center justify-center gap-2 w-full px-6 py-3 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-pixel text-xs sm:text-sm font-bold rounded-lg shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02]">
+          <span>📥</span> DOWNLOAD GAME (.MCWORLD)
+        </a>
+      </div>
+
+      <p class="text-xs text-slate-500">
+        6-Letter Word Binary Converter & Visualizer &bull; Standalone HTML Application
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Embedded Data URIs for 0lamp.png (Off) and 1lamp.png (On)
+    const LAMP_OFF_SVG = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64">
+        <rect width="16" height="16" fill="#1b120c"/>
+        <rect x="1" y="1" width="14" height="14" fill="#3a2214"/>
+        <rect x="2" y="2" width="12" height="12" fill="#58341c"/>
+        <rect x="4" y="4" width="8" height="8" fill="#754523"/>
+        <path d="M5 2h6v12H5zM2 5h12v6H2z" fill="#492b17" opacity="0.6"/>
+        <rect x="6" y="6" width="4" height="4" fill="#885229"/>
+        <rect x="0" y="0" width="1" height="16" fill="#0f0906"/>
+        <rect x="15" y="0" width="1" height="16" fill="#0f0906"/>
+        <rect x="0" y="0" width="16" height="1" fill="#0f0906"/>
+        <rect x="0" y="15" width="16" height="1" fill="#0f0906"/>
+      </svg>
+    `)}`;
+
+    const LAMP_ON_SVG = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64">
+        <rect width="16" height="16" fill="#2d1706"/>
+        <rect x="1" y="1" width="14" height="14" fill="#d97706"/>
+        <rect x="2" y="2" width="12" height="12" fill="#f59e0b"/>
+        <rect x="4" y="4" width="8" height="8" fill="#fbbf24"/>
+        <path d="M5 2h6v12H5zM2 5h12v6H2z" fill="#fcd34d" opacity="0.7"/>
+        <rect x="6" y="6" width="4" height="4" fill="#fffbeb"/>
+        <rect x="0" y="0" width="1" height="16" fill="#1c0d03"/>
+        <rect x="15" y="0" width="1" height="16" fill="#1c0d03"/>
+        <rect x="0" y="0" width="16" height="1" fill="#1c0d03"/>
+        <rect x="0" y="15" width="16" height="1" fill="#1c0d03"/>
+      </svg>
+    `)}`;
+
+    const wordInput = document.getElementById('wordInput');
+    const charCount = document.getElementById('charCount');
+    const errorMsg = document.getElementById('errorMsg');
+    const matrixText = document.getElementById('matrixText');
+    const lampGrid = document.getElementById('lampGrid');
+    const breakdownContainer = document.getElementById('breakdownContainer');
+    const btnPreset = document.getElementById('btnPreset');
+    const btnCopyText = document.getElementById('btnCopyText');
+
+    // Get 5-bit binary string for a letter (A=1 -> 00001, Z=26 -> 11010)
+    function getLetterBinary(char) {
+      const code = char.toUpperCase().charCodeAt(0) - 64;
+      if (code < 1 || code > 26) return "00000";
+      return code.toString(2).padStart(5, '0');
+    }
+
+    function updateView() {
+      let rawVal = wordInput.value.toUpperCase().replace(/[^A-Z]/g, '');
+      wordInput.value = rawVal;
+      
+      charCount.textContent = `${rawVal.length}/6`;
+
+      if (rawVal.length !== 6) {
+        errorMsg.classList.remove('hidden');
+        matrixText.textContent = "Please enter a 6-letter word to view matrix output.";
+        lampGrid.innerHTML = '';
+        breakdownContainer.innerHTML = '';
+        return;
+      }
+
+      errorMsg.classList.add('hidden');
+
+      const letters = rawVal.split('');
+      const binaryColumns = letters.map(ch => getLetterBinary(ch));
+
+      // Construct 5x6 Matrix Text
+      let textLines = ["5x6", letters.join(' ')];
+      
+      // 5 Rows (bit index 0 to 4)
+      for (let row = 0; row < 5; row++) {
+        let rowBits = [];
+        for (let col = 0; col < 6; col++) {
+          rowBits.push(binaryColumns[col][row]);
+        }
+        textLines.push(rowBits.join(' '));
+      }
+
+      matrixText.textContent = textLines.join('\n');
+
+      // Render Seamless 5x6 Lamp Grid
+      lampGrid.innerHTML = '';
+      for (let row = 0; row < 5; row++) {
+        for (let col = 0; col < 6; col++) {
+          const bitVal = binaryColumns[col][row];
+          const img = document.createElement('img');
+          img.src = bitVal === '1' ? LAMP_ON_SVG : LAMP_OFF_SVG;
+          img.alt = bitVal === '1' ? '1lamp' : '0lamp';
+          img.title = `Letter ${letters[col]} (Bit ${row + 1}): ${bitVal}`;
+          lampGrid.appendChild(img);
+        }
+      }
+
+      // Render Breakdown Cards
+      breakdownContainer.innerHTML = '';
+      letters.forEach((ch, idx) => {
+        const num = ch.charCodeAt(0) - 64;
+        const bin = binaryColumns[idx];
+        const card = document.createElement('div');
+        card.className = "bg-slate-950 border border-slate-800 rounded-lg p-3 text-center flex flex-col items-center justify-between";
+        card.innerHTML = `
+          <div class="text-xl font-bold text-amber-400 font-pixel">${ch}</div>
+          <div class="text-xs text-slate-500 my-1">#${num}</div>
+          <div class="font-code text-xs tracking-widest bg-slate-900 px-2 py-1 rounded text-slate-300 font-bold border border-slate-800">
+            ${bin}
+          </div>
+        `;
+        breakdownContainer.appendChild(card);
+      });
+    }
+
+    wordInput.addEventListener('input', updateView);
+
+    btnPreset.addEventListener('click', () => {
+      wordInput.value = 'ANIMAL';
+      updateView();
+    });
+
+    btnCopyText.addEventListener('click', () => {
+      navigator.clipboard.writeText(matrixText.textContent);
+      btnCopyText.textContent = '✅ Copied!';
+      setTimeout(() => { btnCopyText.textContent = '📋 Copy Text'; }, 2000);
+    });
+
+    // Initialize on page load
+    updateView();
+  </script>
+</body>
+</html>
